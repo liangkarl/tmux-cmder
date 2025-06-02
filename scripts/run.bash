@@ -22,7 +22,7 @@ if ! type -t fzf; then
 fi &> /dev/null
 
 input_box() {
-    echo | fzf --print-query --prompt "$*: " | head -n 1
+    echo -en | fzf --style=minimal --no-info --print-query --prompt "$*: " | head -n 1
 }
 
 list_win_all() {
