@@ -10,11 +10,10 @@ pane="$(tmux display-message -p '#{pane_id}')"
 
 source menu.bash
 
-main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane")
-session_menu=("new" "kill" "switch" "detach" "rename" "info")
-win_menu=("swap" "break" "kill" "switch" "move" "rename" "link" "info")
-pane_menu=("rename" "swap" "break" "kill" "switch" "join" "layout" "resize" "info")
-cb_ans=
+main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane" "exit")
+session_menu=("new" "kill" "switch" "detach" "rename" "info" "back" "exit")
+win_menu=("swap" "break" "kill" "switch" "move" "rename" "link" "info" "back" "exit")
+pane_menu=("rename" "swap" "break" "kill" "switch" "join" "layout" "resize" "info" "back" "exit")
 
 if ! type -t fzf; then
     echo "no 'fzf' found!" >&2
@@ -176,7 +175,6 @@ handle_main() {
     while :; do
         menu.height 15
         menu.opts "${main_menu[@]}"
-        menu.add_opt "exit"
         menu.run
         ans=$(menu.ans_opt)
         idx=$(menu.ans_idx)
@@ -254,8 +252,6 @@ handle_window() {
     state="handle_window"
     menu.height 15
     menu.opts "${win_menu[@]}"
-    menu.add_opt "exit"
-    menu.add_opt "back"
     while :; do
         menu.run
         ans=$(menu.ans_opt)
@@ -323,8 +319,6 @@ handle_pane() {
     state="handle_pane"
     menu.height 15
     menu.opts "${pane_menu[@]}"
-    menu.add_opt "exit"
-    menu.add_opt "back"
     while :; do
         menu.run
         ans=$(menu.ans_opt)
@@ -393,8 +387,6 @@ handle_session() {
     while :; do
         menu.height 15
         menu.opts "${session_menu[@]}"
-        menu.add_opt "exit"
-        menu.add_opt "back"
         menu.run
         ans=$(menu.ans_opt)
         idx=$(menu.ans_idx)
