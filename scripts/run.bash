@@ -14,6 +14,7 @@ main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane" "exit")
 session_menu=("new" "kill" "switch" "detach" "rename" "info" "back" "exit")
 win_menu=("swap" "break" "kill" "switch" "move" "rename" "link" "info" "back" "exit")
 pane_menu=("rename" "swap" "break" "kill" "switch" "join" "layout" "resize" "info" "back" "exit")
+plugin_menu=("install" "update" "remove" "back" "exit")
 
 if ! type -t fzf; then
     echo "no 'fzf' found!" >&2
@@ -401,6 +402,33 @@ handle_session() {
                 ans=cancel
                 session_info | fzf
                 ans=exit
+                ;;
+            exit) exit;;
+            *|back) return;;
+        esac
+    done
+}
+
+handle_plugin() {
+    local ans idx state dir
+    dir="${XDG_CONFIG_HOME}/tmux/plugins/tpm/bindings"
+
+    while :; do
+        menu.height 15
+        menu.opts "${plugin_menu[@]}"
+        menu.run
+        ans=$(menu.ans_opt)
+        idx=$(menu.ans_idx)
+
+        case "$ans" in
+            install)
+                eval ${dir}/install_plugins
+                ;;
+            update)
+                eval ${dir}/update_plugins
+                ;;
+            remove)
+                eval ${dir}/clean_plugins
                 ;;
             exit) exit;;
             *|back) return;;
