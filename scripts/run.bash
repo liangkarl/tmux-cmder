@@ -9,6 +9,7 @@ pane="$(tmux display-message -p '#{pane_id}')"
 # finder='fzf-tmux -p 40%,40% -- --reverse'
 
 source menu.bash
+source common.bash
 
 main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane" "exit")
 session_menu=("new" "kill" "switch" "detach" "rename" "info" "back" "exit")
@@ -42,121 +43,22 @@ list_pane_window() {
 }
 
 session_info() {
-    local list
-    list="
-session_activity
-session_alerts
-session_attached
-session_attached_list
-session_created
-session_format
-session_group
-session_group_attached
-session_group_attached_list
-session_group_list
-session_group_many_attached
-session_group_size
-session_grouped
-session_id
-session_last_attached
-session_many_attached
-session_marked
-session_name
-session_path
-session_stack
-session_windows
-    "
-    for var in $list; do
+    local var
+    for var in $session_vars; do
         printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
 
 win_info() {
-    local list
-    list="window_active
-window_active_clients
-window_active_clients_list
-window_active_sessions
-window_active_sessions_list
-window_activity
-window_activity_flag
-window_bell_flag
-window_bigger
-window_cell_height
-window_cell_width
-window_end_flag
-window_flags
-window_format
-window_height
-window_id
-window_index
-window_last_flag
-window_layout
-window_linked
-window_linked_sessions
-window_linked_sessions_list
-window_marked_flag
-window_name
-window_offset_x
-window_offset_y
-window_panes
-window_raw_flags
-window_silence_flag
-window_stack_index
-window_start_flag
-window_visible_layout
-window_width
-window_zoomed_flag
-wrap_flag
-"
-    for var in $list; do
+    local var
+    for var in $win_vars; do
         printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
 
 pane_info() {
-    local list
-    list="pane_active
-pane_at_bottom
-pane_at_left
-pane_at_right
-pane_at_top
-pane_bg
-pane_bottom
-pane_current_command
-pane_current_path
-pane_dead
-pane_dead_signal
-pane_dead_status
-pane_dead_time
-pane_fg
-pane_format
-pane_height
-pane_id
-pane_in_mode
-pane_index
-pane_input_off
-pane_last
-pane_left
-pane_marked
-pane_marked_set
-pane_mode
-pane_path
-pane_pid
-pane_pipe
-pane_right
-pane_search_string
-pane_start_command
-pane_start_path
-pane_synchronized
-pane_tabs
-pane_title
-pane_top
-pane_tty
-pane_unseen_changes
-pane_width
-    "
-    for var in $list; do
+    local var
+    for var in $pane_vars; do
         printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
