@@ -145,22 +145,30 @@ menu.fzf() {
 	done
 }
 
-menu.fzf-tmux() {
-	local fzf opt i
+__menu_fzf_tmux() {
+	local fzf
 
 	fzf=("$(which fzf-tmux)" "-p" "-h ${__m_height}" "--")
 
 	if [[ -n "$__m_defopt" ]]; then
-		fzf+=("--query=${__m_opts[$__m_defopt]}")
+		fzf+=" --query=${__m_opts[$__m_defopt]}"
 	fi
 
 	if [[ -n "$__m_title" ]]; then
-		fzf+=("--header=${__m_title}")
+		fzf+=" --header='${__m_title}'"
 	fi
 
 	if [[ -n "$__m_prompt" ]]; then
-		fzf+=("--prompt=${__m_prompt}: ")
+		fzf+=" --prompt='${__m_prompt}: '"
 	fi
+
+	echo "$fzf"
+}
+
+menu.fzf-tmux() {
+	local fzf opt i
+
+	fzf="$(__menu_fzf_tmux)"
 
 	opt=$(eval "echo ${__m_opts[@]// /%} | sed -e 's/ /\n/g' -e 's/%/ /g' | ${fzf[*]}")
 

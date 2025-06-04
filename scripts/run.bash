@@ -5,11 +5,13 @@ session="$(tmux display-message -p '#S')"
 window="$(tmux display-message -p '#W')"
 client="$(tmux display-message -p '#{client_name}')"
 pane="$(tmux display-message -p '#{pane_id}')"
+dir="$(dirname $0)"
 
 # finder='fzf-tmux -p 40%,40% -- --reverse'
 
-source menu.bash
-source common.bash
+source ${dir}/menu.bash
+source ${dir}/common.bash
+source ${dir}/util.bash
 
 main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane" "exit")
 session_menu=("new" "kill" "switch" "detach" "rename" "info" "back" "exit")
@@ -98,6 +100,7 @@ run_win_cmd() {
     local ans idx state
     local src dst
     local sym opt
+    local fzf
 
     declare -A sym opt
     sym=([swap]="<->"
@@ -110,6 +113,7 @@ run_win_cmd() {
          [new]="new-window -n")
 
     ans="$1"
+    fzf=$(__menu_fzf_tmux)
     case "$ans" in
         rename | new)
             name=$(input_box 'Enter new window title')
@@ -117,10 +121,10 @@ run_win_cmd() {
             tmux ${opt[$ans]} "$name"
             ;;
         swap | move | link)
-            src=$(list_win_all | fzf)
+            src=$(list_win_all | $fzf)
             [[ -z "$src" ]] && return
 
-            dst=$(list_win_all | sed -e "s/^/$src ${sym[$ans]} /" | fzf | sed -e "s/^$src ${sym[$ans]} //")
+            dst=$(list_win_all | sed -e "s/^/$src ${sym[$ans]} /" | $fzf | sed -e "s/^$src ${sym[$ans]} //")
             [[ -z "$dst" ]] && return
 
             src=${src%%-*}
@@ -128,14 +132,14 @@ run_win_cmd() {
             tmux ${ans}-window -s $src -t $dst
             ;;
         break | kill | switch)
-            src=$(list_win_all | fzf)
+            src=$(list_win_all | $fzf)
             [[ -z "$src" ]] && return
 
             src=${src%%-*}
             tmux ${opt[$ans]} -t $src
             ;;
         info)
-            win_info | fzf
+            win_info | $fzf
             ;;
         exit) return;;
         *) return 1;;
@@ -160,7 +164,7 @@ handle_window() {
         ans=$(menu.ans_opt)
         idx=$(menu.ans_idx)
 
-        if [[ -z "$idx" ]]; then
+        if [[ -z "$ans" ]]; then
             return 1
         fi
 
@@ -231,7 +235,7 @@ handle_pane() {
             return 1
         fi
 
-        run_win_cmd $ans && exit
+        run_pane_cmd $ans && exit
     done
 }
 
@@ -338,6 +342,18 @@ handle_plugin() {
     done
 }
 
-menu.backend "fzf"
+
+  # fzf-tmux -p "$1" \
+  #   --ansi \
+  #   --bind="$2" \
+  #   --delimiter=":" \
+  #   --layout="$3" \
+  #   --no-multi \
+  #   --print-query \
+  #   --with-nth="3.." \
+  #   --color="$4" \
+  #   --preview="$CURRENT_DIR/preview.sh $CAPTURE_FILENAME {}" \
+  #   --preview-window="$preview_window"
+menu.backend "fzf-tmux"
 # state='handle_main'
 handle_main "$@"
