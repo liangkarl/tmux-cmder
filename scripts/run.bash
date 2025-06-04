@@ -359,3 +359,5 @@ handle_plugin() {
 menu.backend "fzf-tmux"
 # state='handle_main'
 handle_main "$@"
+
+exit 0
