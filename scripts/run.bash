@@ -25,7 +25,9 @@ if ! type -t fzf; then
 fi &> /dev/null
 
 input_box() {
-    echo -en | fzf --style=minimal --no-info --print-query --prompt "$*: " | head -n 1
+    local fzf
+    fzf=$(__menu_fzf_tmux)
+    echo -en | $fzf --style=minimal --no-info --print-query --prompt "$*: " | head -n 1
 }
 
 list_win_all() {
