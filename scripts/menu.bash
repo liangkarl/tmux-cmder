@@ -148,7 +148,11 @@ menu.fzf() {
 __menu_fzf_tmux() {
 	local fzf
 
-	fzf=("$(which fzf-tmux)" "-p" "-h ${__m_height}" "--")
+	fzf="$(which fzf-tmux)"
+	fzf+=" -p"
+	fzf+=" -h ${__m_height}"
+	fzf+=" --"
+	fzf+=" --wrap --wrap-sign="
 
 	if [[ -n "$__m_defopt" ]]; then
 		fzf+=" --query=${__m_opts[$__m_defopt]}"
