@@ -13,11 +13,12 @@ source ${dir}/menu.bash
 source ${dir}/common.bash
 source ${dir}/util.bash
 
-main_menu=("clipboard" "keys" "tools" "plugin" "session" "window" "pane" "exit")
-session_menu=("new" "kill" "switch" "detach" "rename" "info" "back" "exit")
-win_menu=("swap" "break" "kill" "switch" "move" "rename" "link" "info" "back" "exit")
-pane_menu=("rename" "swap" "break" "kill" "switch" "join" "layout" "resize" "info" "back" "exit")
+main_menu=("clipboard" "keys" "plugin" "session" "window" "pane" "setting" "exit")
+session_menu=("new" "kill" "switch" "detach" "rename" "back""exit")
+win_menu=("swap" "break" "kill" "switch" "move" "rename" "link" "back" "exit")
+pane_menu=("rename" "swap" "break" "kill" "switch" "join" "layout" "resize" "back" "exit")
 plugin_menu=("install" "update" "remove" "back" "exit")
+settings_menu=("server" "session" "window" "pane")
 
 if ! type -t fzf; then
     echo "no 'fzf' found!" >&2
@@ -49,21 +50,57 @@ list_pane_window() {
 session_info() {
     local var
     for var in $session_vars; do
-        printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+        printf "[var] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done | sort
+
+    tmux show | sort | while read -r var val; do
+        printf "[opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+
+    tmux show -g | sort | while read -r var val; do
+        printf "[g_opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
 
 win_info() {
     local var
+
     for var in $win_vars; do
-        printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+        printf "[var] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done | sort
+
+    tmux show -w | sort | while read -r var val; do
+        printf "[opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+
+    tmux show -gw | sort | while read -r var val; do
+        printf "[g_opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
 
 pane_info() {
     local var
     for var in $pane_vars; do
-        printf "%-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+        printf "[var] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+
+    tmux show -p | sort | while read -r var val; do
+        printf "[opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+
+    tmux show -gp | sort | while read -r var val; do
+        printf "[g_opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+}
+
+server_info() {
+    local var
+    tmux show -s | sort | while read -r var val; do
+        printf "[opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
+    done
+
+    tmux show -gs | sort | while read -r var val; do
+        printf "[g_opt] %-30s: %s\n" "$var" "$(tmux display-message -p "#{$var}")"
     done
 }
 
@@ -140,9 +177,6 @@ run_win_cmd() {
             src=${src%%-*}
             tmux ${opt[$ans]} -t $src
             ;;
-        info)
-            win_info | $fzf
-            ;;
         exit) return;;
         *) return 1;;
     esac
@@ -214,9 +248,6 @@ run_pane_cmd() {
             src=${src%%-*}
             tmux ${opt[$ans]} -t $src
             ;;
-        info)
-            win_info | fzf
-            ;;
         exit) return;;
         *) return 1;;
     esac
@@ -281,9 +312,6 @@ run_session_cmd() {
             src=${src%%-*}
             tmux ${opt[$ans]} -t $src
             ;;
-        info)
-            win_info | fzf
-            ;;
         exit) return;;
         *) return 1;;
     esac
@@ -305,11 +333,6 @@ handle_session() {
                 name=$(input_box 'Enter new pane title')
                 ans=cancel
                 tmux select-pane -T "$name" && ans=exit
-                ;;
-            info)
-                ans=cancel
-                session_info | fzf
-                ans=exit
                 ;;
             exit) exit;;
             *|back) return;;
@@ -344,6 +367,38 @@ handle_plugin() {
     done
 }
 
+handle_setting() {
+    local ans idx state dir fzf
+    dir="${XDG_CONFIG_HOME}/tmux/plugins/tpm/bindings"
+    ans="$1"
+    fzf=$(__menu_fzf_tmux)
+
+    while :; do
+        menu.height 15
+        menu.opts "${settings_menu[@]}"
+        menu.run
+        ans=$(menu.ans_opt)
+        idx=$(menu.ans_idx)
+
+        case "$ans" in
+            server)
+                server_info | $fzf
+                ;;
+            session)
+                session_info | $fzf
+                ;;
+            window)
+                win_info | $fzf
+                ;;
+            pane)
+                pane_info | $fzf
+                ;;
+            exit) exit;;
+            *|back) return;;
+        esac
+    done
+}
+
 
   # fzf-tmux -p "$1" \
   #   --ansi \
@@ -360,4 +415,5 @@ menu.backend "fzf-tmux"
 # state='handle_main'
 handle_main "$@"
 
-exit 0
+# always return 0
+true
